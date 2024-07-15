@@ -1,26 +1,67 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div id="app">
+    <router-view />
+  </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
 export default {
   name: 'App',
-  components: {
-    HelloWorld
+  data() {
+    return {
+      loggedInUser: null
+    };
+  },
+  mounted() {
+    this.checkLoggedInUser();
+  },
+  methods: {
+    checkLoggedInUser() {
+      const user = JSON.parse(localStorage.getItem('loggedInUser'));
+      if (user) {
+        this.loggedInUser = user;
+        this.$router.push('/profile'); 
+      } else {
+        this.$router.push('/login'); 
+      }
+    },
+    handleLogout() {
+      localStorage.removeItem('loggedInUser');
+      this.loggedInUser = null;
+      this.$router.push('/login');
+    },
+    handleLoginSuccess(userData) {
+      this.loggedInUser = userData.user;
+      this.$router.push('/profile'); 
+    }
   }
 }
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Open Sans, sans-serif;
+}
+
+header {
+  width: 100vw;
+  background-color: #222;
+  padding: 15px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  height: 50px;
+  margin-right: 20px;
 }
 </style>

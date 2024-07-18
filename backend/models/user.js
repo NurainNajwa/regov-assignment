@@ -3,25 +3,32 @@ const db = require('../config');
 const User = {
   create: async (username, email, password) => {
     try {
-      const [result] = await db.query('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', [username, email, password]);
+      const [result] = await db.query(
+        'INSERT INTO users (username, email, password) VALUES (?, ?, ?)', [username, email, password]
+      );
       return result;
     } catch (err) {
       throw err;
     }
   },
 
-  findByEmailAndPassword: async (email, password) => {
+  findByEmail: async (email) => {
     try {
-      const [rows] = await db.query('SELECT * FROM users WHERE email = ? AND password = ?', [email, password]);
-      return rows;
+      const [rows] = await pool.query(
+        'SELECT * FROM users WHERE email = ?', [email]
+      );
+      return rows[0];
     } catch (err) {
       throw err;
     }
   },
 
+
   findById: async (id) => {
     try {
-      const [rows] = await db.query('SELECT username, email, aboutMe FROM users WHERE id = ?', [id]);
+      const [rows] = await db.query(
+        'SELECT username, email, aboutMe FROM users WHERE id = ?', [id]
+      );
       return rows;
     } catch (err) {
       throw err;

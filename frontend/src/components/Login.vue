@@ -2,36 +2,87 @@
 <template>
     <div class="login-container">
       <h2>Login</h2>
-      <form @submit.prevent="login">
+      <form @submit.prevent="login" novalidate>
         <div class="form-group">
           <label for="username">Username:</label>
-          <input type="text" id="username" v-model="username" required />
+          <input type="text" id="username" v-model="user.username" 
+            :class="{ 'is-invalid': errors.username }" required />
+            <div v-if="errors.email" class="invalid-feedback">{{ errors.username }}</div>
         </div>
         <div class="form-group">
           <label for="password">Password:</label>
-          <input type="password" id="password" v-model="password" required />
+          <input type="password" id="password" v-model="user.password" 
+          :class="{ 'is-invalid': errors.password }" required />
+          <div v-if="errors.password" class="invalid-feedback">{{ errors.password }}</div>
         </div>
         <div class="btn-group">
           <div><button type="submit" class="btn btn-success">Login</button></div>
           <div><button><router-link to="/register" class="btn btn-secondary">Register</router-link></button></div>
         </div>
       </form>
+      <div v-if="message" class="message-container">
+        <div class="alert alert-info small">{{ message }}</div>
+      </div>      
     </div>
   </template>
 
 <script>
+import { login } from '@/services/api';
+
 export default {
   data() {
     return {
-      email: '',
-      password: ''
+      user: {
+          username: '',
+          password: ''
+      },
+      errors: {},
+      message: ''
     };
   },
   methods: {
-    login() {
-      // Dummy login logic
-      console.log('User logged in with:', this.email, this.password);
-      this.$router.push('/profile');
+    validateForm() {
+      this.errors = {};
+      if (!this.user.username) {
+          this.errors.username = 'Username is required.';
+      }
+      if (!this.user.password) {
+          this.errors.password = 'Password is required.';
+      }
+      return Object.keys(this.errors).length === 0;
+    },
+    async login() {
+      if (this.validateForm()) {
+        try {
+          console.log('Sending user data:', this.user);
+          const response = await login(this.user);
+          console.log('Response data:', response.data);
+          this.message = 'Login successful!';
+          this.$emit('updateUser', response.data.user);
+          localStorage.setItem('loggedInUser', JSON.stringify(response.data.user));
+          console.log('loggedInUser', JSON.stringify(response.data.user))
+          setTimeout(() => {
+            this.$router.push('/profile');
+          }, 1000);
+        } catch (err) {
+          console.error('Error:', err);
+          if (err.response && err.response.data) {
+              this.message = `${err.response.data.error}`;
+          } else {
+              this.message = 'An unknown error occurred.';
+          }
+        }
+      }
+    },
+    resetForm() {
+      this.user = {
+          username: '',
+          password: ''
+      };
+      this.errors = {};
+    },
+    goToRegister() {
+      this.$router.push('/register');
     }
   }
 };
@@ -102,5 +153,14 @@ button:hover {
   padding: 20px;
   font-size: 30px;
   display: inline-block;
+}
+
+.invalid-feedback {
+  color: red;
+  font-size: 0.9rem;
+}
+
+.message-container {
+  margin-top: 10px;
 }
 </style>

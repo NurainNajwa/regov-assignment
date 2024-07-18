@@ -1,26 +1,41 @@
 const User = require('../models/user');
+const bcrypt = require('bcryptjs');
 
 exports.register = async (req, res) => {
   const { username, email, password } = req.body;
   try {
-    const result = await User.create(username, email, password);
-    res.status(201).json({ message: 'User registered successfully' });
+    //check email exist
+    const userExists = await User.findByEmail(email);
+    if (userExists) {
+      return res.status(400).json({ error: 'Email already exists' });
+    }
+
+    //hash password before saving
+    const hashedPassword = await bcrypt.hash(password, 10);
+    //create user in database
+    const userId = await User.create(username, email, hashedPassword);
+    //respond success message
+    res.status(201).json({ message: 'User registered successfully', userId });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
+  const { username, password } = req.body;
   try {
-    const rows = await User.findByEmailAndPassword(email, password);
-    if (rows.length > 0) {
-      res.status(200).json({ message: 'Login successful', user: rows[0] });
-    } else {
-      res.status(401).json({ message: 'Invalid credentials' });
+    const user = await User.findOne({ where: { username } });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
     }
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Invalid credentials' });
+    }
+    res.status(200).json({ user });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 

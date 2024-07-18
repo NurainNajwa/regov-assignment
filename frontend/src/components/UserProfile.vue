@@ -3,43 +3,35 @@
       <h2>User Profile</h2>
       <div class="form-group">
         <label for="username">Username:</label>
-        <input type="text" id="username" v-model="username" readonly>
+        <div>{{ username }}</div>
       </div>
       <div class="form-group">
         <label for="email">Email:</label>
-        <input type="email" id="email" v-model="email" readonly>
+        <div>{{ email }}</div>
       </div>
       <div class="form-group">
         <label for="aboutMe">About Me:</label>
-        <textarea id="aboutMe" v-model="aboutMe"></textarea>
+        <div>{{ aboutMe }}</div>
       </div>
-      <button @click="saveDraft">Save as Draft</button>
-      <button @click="submit">Submit</button>
+      <button @click="editProfile">Edit Profile</button>
     </div>
   </template>
   
   <script>
   export default {
-    data() {
-      return {
-        username: 'JohnDoe', // Replace with actual username from logged-in user data
-        email: 'john.doe@example.com', // Replace with actual email from logged-in user data
-        aboutMe: ''
-      };
+    props: {
+      username: String,
+      email: String,
+      aboutMe: String
     },
     methods: {
-      saveDraft() {
-        // Logic for saving the draft
-        console.log('Draft saved with:', this.aboutMe);
-      },
-      submit() {
-        // Logic for submitting the "About Me" section
-        console.log('About Me submitted with:', this.aboutMe);
+      editProfile() {
+        this.$emit('edit'); // Emitting an event to notify parent component to switch to edit mode
       }
     }
   };
   </script>
-  
+
   <style scoped>
   .profile-container {
     max-width: 400px;
@@ -64,12 +56,6 @@
   label {
     display: block;
     margin-bottom: 0.5rem;
-  }
-  
-  input, textarea {
-    width: 100%;
-    padding: 0.5rem;
-    box-sizing: border-box;
   }
   
   button {
